@@ -40,7 +40,6 @@ function generateFallbackInsight(body: RequestBody) {
       : "European EAQI";
   const { aqi, categoryLabel, location, pollutants, weather, trend24h } = body;
 
-  // Identify highest relative pollutant
   let concernTextEn = "Fine particulate matter (PM2.5) is the primary driver of ambient air pollution.";
   let concernTextHi = "अति सूक्ष्म कण (PM2.5) वर्तमान में वायु प्रदूषण का मुख्य कारण हैं।";
 
@@ -55,7 +54,6 @@ function generateFallbackInsight(body: RequestBody) {
     concernTextHi = "नाइट्रोजन डाइऑक्साइड (NO₂) की मात्रा अधिक है, जो वाहनों के धुएं या औद्योगिक गतिविधियों से जुड़ी है।";
   }
 
-  // Guidance based on AQI level
   let actionEn = "";
   let actionHi = "";
   let activityEn = "";
@@ -112,25 +110,30 @@ function generateFallbackInsight(body: RequestBody) {
 }
 
 export async function POST(req: NextRequest) {
+  let body: RequestBody;
   try {
-    const body: RequestBody = await req.json();
-    const apiKey = process.env.GEMINI_API_KEY;
+    body = await req.json();
+  } catch (e) {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
-    if (!apiKey || apiKey.trim() === "" || apiKey === "your_actual_gemini_api_key_here") {
-      return NextResponse.json(generateFallbackInsight(body));
-    }
+  const apiKey = process.env.GEMINI_API_KEY;
 
-    const { location, aqi, standard, categoryLabel, pollutants, weather, trend24h, language } = body;
-    const isHi = language === "hi";
+  if (!apiKey || apiKey.trim() === "" || apiKey === "your_actual_gemini_api_key_here") {
+    return NextResponse.json(generateFallbackInsight(body));
+  }
 
-    const standardFormatted =
-      standard === "india"
-        ? "India National AQI - CPCB (0-500 scale)"
-        : standard === "us"
-        ? "U.S. EPA AQI (0-500 scale)"
-        : "European EAQI (0-100+ scale)";
+  const { location, aqi, standard, categoryLabel, pollutants, weather, trend24h, language } = body;
+  const isHi = language === "hi";
 
-    const promptText = `
+  const standardFormatted =
+    standard === "india"
+      ? "India National AQI - CPCB (0-500 scale)"
+      : standard === "us"
+      ? "U.S. EPA AQI (0-500 scale)"
+      : "European EAQI (0-100+ scale)";
+
+  const promptText = `
 You are the atmospheric analysis intelligence for AQI Sense, an advanced environmental intelligence platform.
 Analyze the following real modeled air-quality and meteorological data for:
 Location: ${location.name}, ${location.admin1 || ""} ${location.country || ""} (Lat: ${location.latitude}, Lon: ${location.longitude})
@@ -168,68 +171,54 @@ CRITICAL RULES:
 Return ONLY the raw JSON object, without markdown backticks or commentary.
 `;
 
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  // Robust model waterfall: try available flash models
+  const candidateModels = ["gemini-flash-lite-latest", "gemini-3.5-flash", "gemini-3.8-flash"];
 
-    const apiRes = await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [{ text: promptText }],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 1000,
-          responseMimeType: "application/json",
-        },
-      }),
-    });
-
-    if (!apiRes.ok) {
-      console.warn(`AI API returned status ${apiRes.status}, falling back to intelligent synthesizer.`);
-      return NextResponse.json(generateFallbackInsight(body));
-    }
-
-    const apiData = await apiRes.json();
-    const rawCandidate = apiData.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!rawCandidate) {
-      return NextResponse.json(generateFallbackInsight(body));
-    }
-
-    const cleanJson = rawCandidate.replace(/```json/g, "").replace(/```/g, "").trim();
-    const parsed = JSON.parse(cleanJson);
-
-    return NextResponse.json({
-      currentSituation: parsed.currentSituation || "",
-      mainPollutionConcern: parsed.mainPollutionConcern || "",
-      trend: parsed.trend || "",
-      whatYouCanDo: parsed.whatYouCanDo || "",
-      outdoorActivityGuidance: parsed.outdoorActivityGuidance || "",
-      summary: parsed.summary || "",
-      isFallback: false,
-    });
-  } catch (error) {
-    console.error("AI Insight Route Handler Error:", error);
+  for (const model of candidateModels) {
     try {
-      const fallbackBody = await req.json();
-      return NextResponse.json(generateFallbackInsight(fallbackBody));
-    } catch {
-      return NextResponse.json(
-        {
-          currentSituation: "Current atmospheric simulation data is active and updated.",
-          mainPollutionConcern: "Particulate concentrations are being monitored.",
-          trend: "Atmospheric trend is monitored in real-time.",
-          whatYouCanDo: "Follow general air quality precautions based on current category.",
-          outdoorActivityGuidance: "Monitor symptoms and take breaks during prolonged outdoor exertion.",
-          summary: "Live air quality and meteorological metrics remain active.",
-          isFallback: true,
-        },
-        { status: 200 }
-      );
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`;
+      const apiRes = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: promptText }],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.2,
+            maxOutputTokens: 1000,
+            responseMimeType: "application/json",
+          },
+        }),
+      });
+
+      if (apiRes.ok) {
+        const apiData = await apiRes.json();
+        const rawCandidate = apiData.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (rawCandidate) {
+          const cleanJson = rawCandidate.replace(/```json/g, "").replace(/```/g, "").trim();
+          const parsed = JSON.parse(cleanJson);
+          return NextResponse.json({
+            currentSituation: parsed.currentSituation || "",
+            mainPollutionConcern: parsed.mainPollutionConcern || "",
+            trend: parsed.trend || "",
+            whatYouCanDo: parsed.whatYouCanDo || "",
+            outdoorActivityGuidance: parsed.outdoorActivityGuidance || "",
+            summary: parsed.summary || "",
+            isFallback: false,
+          });
+        }
+      } else {
+        console.warn(`Model ${model} returned HTTP ${apiRes.status}`);
+      }
+    } catch (e: any) {
+      console.warn(`Model ${model} execution error:`, e.message);
     }
   }
+
+  // Graceful fallback if all models are busy/rate-limited
+  return NextResponse.json(generateFallbackInsight(body));
 }
