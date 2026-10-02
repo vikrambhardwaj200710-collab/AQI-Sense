@@ -1,4 +1,4 @@
-import { getAQICategory } from "./aqi-standards";
+import { calculateIndianNAQI, getAQICategory } from "./aqi-standards";
 import { AirQualityResponse, AirQualityStory, AQIStandard, BestWindow, Language } from "./types";
 
 interface PeriodStats {
@@ -32,22 +32,37 @@ export function computeAirQualityStory(
     };
   }
 
-  // Get the most recent 24-hour window from the API (today / current day)
   const currentTime = data.current.time || hourly.time[Math.min(24, hourly.time.length - 1)];
   const currentDateStr = currentTime.slice(0, 10);
 
-  // Group today's hours into Morning (06-11), Afternoon (12-17), Evening (18-21), Night (22-05)
   const morning: PeriodStats = { periodNameEn: "Morning", periodNameHi: "सुबह (06:00 - 11:00)", hours: [], aqiValues: [], pm25Values: [], pm10Values: [], o3Values: [], no2Values: [] };
   const afternoon: PeriodStats = { periodNameEn: "Afternoon", periodNameHi: "दोपहर (12:00 - 17:00)", hours: [], aqiValues: [], pm25Values: [], pm10Values: [], o3Values: [], no2Values: [] };
   const evening: PeriodStats = { periodNameEn: "Evening", periodNameHi: "शाम (18:00 - 21:00)", hours: [], aqiValues: [], pm25Values: [], pm10Values: [], o3Values: [], no2Values: [] };
   const night: PeriodStats = { periodNameEn: "Night", periodNameHi: "रात (22:00 - 05:00)", hours: [], aqiValues: [], pm25Values: [], pm10Values: [], o3Values: [], no2Values: [] };
 
-  const aqiKey = standard === "us" ? "us_aqi" : "european_aqi";
-  const aqiArray = (hourly as any)[aqiKey] || [];
   const pm25Array = hourly.pm2_5 || [];
   const pm10Array = hourly.pm10 || [];
   const o3Array = hourly.ozone || [];
   const no2Array = hourly.nitrogen_dioxide || [];
+  const so2Array = hourly.sulphur_dioxide || [];
+  const coArray = hourly.carbon_monoxide || [];
+
+  let aqiArray: (number | null)[] = [];
+  if (standard === "india") {
+    aqiArray = hourly.time.map((_, i) =>
+      calculateIndianNAQI({
+        pm2_5: pm25Array[i],
+        pm10: pm10Array[i],
+        no2: no2Array[i],
+        so2: so2Array[i],
+        co: coArray[i],
+        o3: o3Array[i],
+      })
+    );
+  } else {
+    const aqiKey = standard === "us" ? "us_aqi" : "european_aqi";
+    aqiArray = (hourly as any)[aqiKey] || [];
+  }
 
   for (let i = 0; i < hourly.time.length; i++) {
     const t = hourly.time[i];
@@ -93,9 +108,21 @@ export function computeAirQualityStory(
     { nameEn: "Night", nameHi: "रात", aqi: nAvg, stats: night },
   ].filter((p) => p.stats.aqiValues.length > 0);
 
-  // If no hours match today (e.g. timezone shift), fall back gracefully
   if (periods.length === 0) {
-    const fallbackVal = data.current[aqiKey] ?? 60;
+    const fallbackVal =
+      standard === "india"
+        ? calculateIndianNAQI({
+            pm2_5: data.current.pm2_5,
+            pm10: data.current.pm10,
+            no2: data.current.nitrogen_dioxide,
+            so2: data.current.sulphur_dioxide,
+            co: data.current.carbon_monoxide,
+            o3: data.current.ozone,
+          })
+        : standard === "us"
+        ? data.current.us_aqi ?? 60
+        : data.current.european_aqi ?? 40;
+
     const cat = getAQICategory(fallbackVal, standard, lang);
     return {
       morning: { aqi: fallbackVal, category: cat.label, description: cat.description },
@@ -110,12 +137,10 @@ export function computeAirQualityStory(
     };
   }
 
-  // Find lowest and highest period
   const sorted = [...periods].sort((a, b) => a.aqi - b.aqi);
   const best = sorted[0];
   const peak = sorted[sorted.length - 1];
 
-  // Determine dominant pollutant during peak period
   const peakPm25 = avg(peak.stats.pm25Values);
   const peakPm10 = avg(peak.stats.pm10Values);
   const peakO3 = avg(peak.stats.o3Values);
@@ -126,7 +151,6 @@ export function computeAirQualityStory(
   else if (peakPm10 > 180 && peakPm10 > peakPm25 * 3) dominant = "PM10 (Coarse Dust)";
   else if (peakNo2 > 90) dominant = "Nitrogen Dioxide (NO₂)";
 
-  // Trend direction
   const firstPeriodAqi = periods[0].aqi;
   const lastPeriodAqi = periods[periods.length - 1].aqi;
   let trendDirection = "Stable";
@@ -193,11 +217,25 @@ export function computeBestModeledWindow(
     };
   }
 
-  const aqiKey = standard === "us" ? "us_aqi" : "european_aqi";
-  const aqiArray = (hourly as any)[aqiKey] || [];
+  let aqiArray: (number | null)[] = [];
+  if (standard === "india") {
+    aqiArray = hourly.time.map((_, i) =>
+      calculateIndianNAQI({
+        pm2_5: hourly.pm2_5?.[i],
+        pm10: hourly.pm10?.[i],
+        no2: hourly.nitrogen_dioxide?.[i],
+        so2: hourly.sulphur_dioxide?.[i],
+        co: hourly.carbon_monoxide?.[i],
+        o3: hourly.ozone?.[i],
+      })
+    );
+  } else {
+    const aqiKey = standard === "us" ? "us_aqi" : "european_aqi";
+    aqiArray = (hourly as any)[aqiKey] || [];
+  }
+
   const currentTime = data.current.time || new Date().toISOString();
 
-  // Find index of current hour
   let startIndex = 0;
   for (let i = 0; i < hourly.time.length; i++) {
     if (hourly.time[i] >= currentTime) {
@@ -206,7 +244,6 @@ export function computeBestModeledWindow(
     }
   }
 
-  // Look ahead 48 hours for the best continuous 3-hour window
   const lookAheadLimit = Math.min(hourly.time.length - 3, startIndex + 48);
   let minAqiAvg = 99999;
   let bestWindowStartIndex = startIndex;
@@ -246,7 +283,20 @@ export function computeBestModeledWindow(
 
   const formattedWindow = `${formatDateDay(startDate)} ${formatHour(startDate)} – ${formatHour(endDate)}`;
 
-  const currentAqi = data.current[aqiKey] ?? roundedAqi;
+  const currentAqi =
+    standard === "india"
+      ? calculateIndianNAQI({
+          pm2_5: data.current.pm2_5,
+          pm10: data.current.pm10,
+          no2: data.current.nitrogen_dioxide,
+          so2: data.current.sulphur_dioxide,
+          co: data.current.carbon_monoxide,
+          o3: data.current.ozone,
+        })
+      : standard === "us"
+      ? data.current.us_aqi ?? roundedAqi
+      : data.current.european_aqi ?? roundedAqi;
+
   const differencePct = currentAqi > roundedAqi ? Math.round(((currentAqi - roundedAqi) / currentAqi) * 100) : 0;
 
   let reason = isHi

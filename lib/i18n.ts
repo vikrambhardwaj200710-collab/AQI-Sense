@@ -3,7 +3,7 @@ export type TranslationKey = keyof typeof translations.en;
 export const translations = {
   en: {
     // Brand
-    brandName: "AQI Guardian",
+    brandName: "AQI Sense",
     brandTagline: "Real-Time Environmental Intelligence & Air Defense",
     brandShortDesc: "Empowering communities with real-time global atmospheric modeling and proactive health insights.",
 
@@ -14,6 +14,7 @@ export const translations = {
     locating: "Detecting location...",
     locationError: "Location permission denied or unavailable.",
     standardUS: "U.S. EPA AQI",
+    standardIN: "India NAQI",
     standardEU: "European EAQI",
     standardLabel: "Standard",
     themeLight: "Daylight",
@@ -23,7 +24,6 @@ export const translations = {
     lastUpdated: "Updated",
     justNow: "Just now",
     compareCities: "Compare Cities",
-    downloadReport: "Download Report",
 
     // Hero Section
     currentAirQuality: "Current Air Quality",
@@ -62,7 +62,7 @@ export const translations = {
 
     // AI Air Insight
     aiInsightTitle: "AI Air Insight",
-    aiInsightSubtitle: "Intelligent atmospheric synthesis powered by Google Gemini",
+    aiInsightSubtitle: "Intelligent atmospheric synthesis powered by Advanced Atmospheric AI",
     currentSituation: "Current Situation",
     mainPollutionConcern: "Main Pollution Concern",
     trendAnalysis: "Atmospheric Trend",
@@ -118,12 +118,12 @@ export const translations = {
     educationSubtitle: "Essential knowledge to understand atmospheric pollution and protect your health.",
     faqWhatIsAQI: "What is the Air Quality Index (AQI)?",
     faqWhatIsAQIAns: "The Air Quality Index is a standardized scale that transforms complex atmospheric pollutant concentrations into an easily understandable number and color-coded tier. Higher values indicate greater air pollution and increased health risks.",
-    faqUSvsEU: "How does U.S. AQI differ from European EAQI?",
-    faqUSvsEUAns: "The U.S. EPA AQI uses a 0 to 500 scale calibrated around national ambient standards, where 100 represents the regulatory safety boundary. The European Air Quality Index (EAQI) uses a 0 to 100+ scale divided into bands from 'Very Good' to 'Extremely Poor', tracking hourly concentrations directly according to European Union environmental directives.",
+    faqUSvsEU: "How do US AQI, Indian NAQI, and European EAQI differ?",
+    faqUSvsEUAns: "The U.S. EPA AQI uses a 0 to 500 scale based on EPA ambient standards. India's National AQI (CPCB) also uses a 0 to 500 scale divided into 6 categories (Good, Satisfactory, Moderate, Poor, Very Poor, Severe) using national health breakpoints. The European Air Quality Index (EAQI) operates on a 0 to 100+ scale divided into bands from Very Good to Extremely Poor, tracking hourly concentrations directly according to European Union directives.",
     faqPM25vsPM10: "Why is PM2.5 more dangerous than PM10?",
     faqPM25vsPM10Ans: "PM10 particles (up to 10 microns, like dust and pollen) are typically caught in the upper respiratory tract. PM2.5 particles (up to 2.5 microns, about 1/30th the diameter of human hair) can penetrate deep into the alveoli of the lungs and enter the bloodstream, elevating cardiovascular and pulmonary risks.",
     faqModeledVsSensors: "What is the difference between modeled data and street-level sensors?",
-    faqModeledVsSensorsAns: "Modeled air quality combines satellite measurements, global weather models (CAMS, ECMWF), emission inventories, and chemical transport calculations to predict regional atmospheric layers. Street-level optical sensors measure a single localized point in space, which can be influenced by hyper-local sources like nearby barbecues or passing trucks.",
+    faqModeledVsSensorsAns: "Modeled air quality combines satellite measurements, global weather models (CAMS, ECMWF), emission inventories, and chemical transport calculations to predict regional atmospheric layers. Street-level optical sensors measure a single localized point in space, which can be influenced by hyper-local sources like nearby barbecues or idling vehicles.",
 
     // Compare Modal
     compareTitle: "Compare Air Quality Between Two Cities",
@@ -135,11 +135,6 @@ export const translations = {
     worseBy: "more polluted than",
     similarAir: "Similar air quality levels",
 
-    // Report
-    reportTitle: "AQI Guardian Atmospheric Report",
-    printReport: "Print / Save PDF",
-    exportJSON: "Export Raw Data (JSON)",
-    reportGeneratedAt: "Report Generated At",
     close: "Close",
 
     // States
@@ -153,7 +148,7 @@ export const translations = {
 
   hi: {
     // Brand
-    brandName: "AQI गार्जियन",
+    brandName: "AQI सेंस",
     brandTagline: "वास्तविक समय वायु गुणवत्ता और स्वास्थ्य सुरक्षा",
     brandShortDesc: "सटीक वायुमंडलीय मॉडलिंग और सक्रिय स्वास्थ्य जानकारी से आपको सशक्त बनाना।",
 
@@ -164,6 +159,7 @@ export const translations = {
     locating: "स्थान का पता लगाया जा रहा है...",
     locationError: "स्थान की अनुमति अस्वीकृत या अनुपलब्ध है।",
     standardUS: "यू.एस. EPA AQI",
+    standardIN: "भारतीय NAQI",
     standardEU: "यूरोपीय EAQI",
     standardLabel: "मानक",
     themeLight: "दिन का मोड",
@@ -173,7 +169,6 @@ export const translations = {
     lastUpdated: "अपडेट किया गया",
     justNow: "अभी-अभी",
     compareCities: "शहरों की तुलना करें",
-    downloadReport: "रिपोर्ट डाउनलोड करें",
 
     // Hero Section
     currentAirQuality: "वर्तमान वायु गुणवत्ता",
@@ -212,7 +207,7 @@ export const translations = {
 
     // AI Air Insight
     aiInsightTitle: "AI वायु विश्लेषण (AI Insight)",
-    aiInsightSubtitle: "Google Gemini द्वारा संचालित बुद्धिमान वायुमंडलीय विश्लेषण",
+    aiInsightSubtitle: "उन्नत AI द्वारा संचालित बुद्धिमान वायुमंडलीय विश्लेषण",
     currentSituation: "वर्तमान स्थिति",
     mainPollutionConcern: "मुख्य चिंताजनक प्रदूषक",
     trendAnalysis: "वायुमंडलीय रुझान",
@@ -268,8 +263,8 @@ export const translations = {
     educationSubtitle: "प्रदूषण को समझने और अपने स्वास्थ्य की रक्षा के लिए आवश्यक जानकारी।",
     faqWhatIsAQI: "AQI (वायु गुणवत्ता सूचकांक) क्या है?",
     faqWhatIsAQIAns: "AQI विभिन्न प्रदूषकों की मात्रा को एक सरल संख्या और रंग-कोडित पैमाने में बदलता है। संख्या जितनी अधिक होगी, स्वास्थ्य जोखिम उतना ही अधिक होगा।",
-    faqUSvsEU: "यू.एस. AQI और यूरोपीय EAQI में क्या अंतर है?",
-    faqUSvsEUAns: "अमेरिकी EPA AQI 0 से 500 के पैमाने का उपयोग करता है। यूरोपीय EAQI 0 से 100+ के पैमाने पर आधारित है और यूरोपीय संघ के मानकों के अनुसार प्रति घंटा प्रदूषण स्तर को मापता है।",
+    faqUSvsEU: "यू.एस. AQI, भारतीय NAQI और यूरोपीय EAQI में क्या अंतर है?",
+    faqUSvsEUAns: "अमेरिकी EPA AQI 0 से 500 के पैमाने का उपयोग करता है। भारतीय राष्ट्रीय AQI (CPCB) भी 0 से 500 के पैमाने पर आधारित है जिसे 6 श्रेणियों में विभाजित किया गया है। यूरोपीय EAQI 0 से 100+ के पैमाने पर आधारित है।",
     faqPM25vsPM10: "PM2.5 कण PM10 से अधिक खतरनाक क्यों हैं?",
     faqPM25vsPM10Ans: "PM10 कण सांस की नली के ऊपरी हिस्से में रुक जाते हैं, जबकि PM2.5 कण अत्यंत सूक्ष्म होते हैं जो फेफड़ों की गहराई तक पहुंचकर रक्त प्रवाह में प्रवेश कर सकते हैं।",
     faqModeledVsSensors: "मॉडल किए गए डेटा और भौतिक सेंसर में क्या अंतर है?",
@@ -285,11 +280,6 @@ export const translations = {
     worseBy: "अधिक प्रदूषित है",
     similarAir: "लगभग समान वायु गुणवत्ता",
 
-    // Report
-    reportTitle: "AQI गार्जियन वायु रिपोर्ट",
-    printReport: "प्रिंट करें / PDF सहेजें",
-    exportJSON: "कच्चा डेटा डाउनलोड करें (JSON)",
-    reportGeneratedAt: "रिपोर्ट जनरेट होने का समय",
     close: "बंद करें",
 
     // States

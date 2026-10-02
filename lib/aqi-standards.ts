@@ -43,7 +43,7 @@ export const US_AQI_SCALE: StandardScaleItem[] = [
     bgColor: "bg-amber-50 dark:bg-amber-950/40",
     textColor: "text-amber-700 dark:text-amber-300",
     borderColor: "border-amber-300 dark:border-amber-800",
-    descriptionEn: "Air quality is acceptable; however, some pollutants may cause moderate health concern for a very small number of unusually sensitive people.",
+    descriptionEn: "Air quality is acceptable; however, some pollutants may cause moderate health concern for sensitive individuals.",
     descriptionHi: "वायु गुणवत्ता स्वीकार्य है; हालांकि, असामान्य रूप से संवेदनशील लोगों को हल्की परेशानी हो सकती है।",
     generalAdviceEn: "Overall acceptable conditions for most people outdoors.",
     generalAdviceHi: "अधिकांश लोगों के लिए बाहर जाने हेतु सामान्य स्थिति।",
@@ -109,10 +109,109 @@ export const US_AQI_SCALE: StandardScaleItem[] = [
     borderColor: "border-rose-400 dark:border-rose-800",
     descriptionEn: "Health warning of emergency conditions: everyone is more likely to be affected.",
     descriptionHi: "आपातकालीन स्वास्थ्य चेतावनी: हर व्यक्ति के स्वास्थ्य पर गंभीर असर पड़ने की प्रबल संभावना है।",
-    generalAdviceEn: "Stay indoors. Seal doors and windows. Do not exercise outdoors. Use certified N95/FFP2 masks if stepping out is unavoidable.",
+    generalAdviceEn: "Stay indoors. Seal doors and windows. Do not exercise outdoors. Use certified N95 masks if stepping out is unavoidable.",
     generalAdviceHi: "घर के अंदर ही रहें। खिड़की-दरवाजे बंद रखें। बाहर व्यायाम न करें। अनिवार्य हो तभी N95 मास्क लगाकर निकलें।",
     sensitiveAdviceEn: "Strictly avoid all physical outdoor activity. Seek medical advice if breathing difficulties arise.",
     sensitiveAdviceHi: "किसी भी बाहरी गतिविधि से पूरी तरह बचें। सांस में दिक्कत होने पर तुरंत डॉक्टर से सलाह लें।",
+  },
+];
+
+export const INDIA_NAQI_SCALE: StandardScaleItem[] = [
+  {
+    min: 0,
+    max: 50,
+    labelEn: "Good",
+    labelHi: "अच्छा (Good)",
+    color: "#10b981",
+    bgColor: "bg-emerald-50 dark:bg-emerald-950/40",
+    textColor: "text-emerald-700 dark:text-emerald-300",
+    borderColor: "border-emerald-300 dark:border-emerald-800",
+    descriptionEn: "Minimal impact. Air quality is safe for all groups according to Indian CPCB standards.",
+    descriptionHi: "न्यूनतम प्रभाव। भारतीय CPCB मानकों के अनुसार हवा पूरी तरह सुरक्षित है।",
+    generalAdviceEn: "Ideal conditions for walking, outdoor sports, and opening windows.",
+    generalAdviceHi: "घूमने, खेलकूद और खिड़कियां खोलने के लिए सर्वोत्तम समय।",
+    sensitiveAdviceEn: "No special precautions needed.",
+    sensitiveAdviceHi: "किसी विशेष सावधानी की आवश्यकता नहीं है।",
+  },
+  {
+    min: 51,
+    max: 100,
+    labelEn: "Satisfactory",
+    labelHi: "संतोषजनक (Satisfactory)",
+    color: "#84cc16",
+    bgColor: "bg-lime-50 dark:bg-lime-950/40",
+    textColor: "text-lime-700 dark:text-lime-300",
+    borderColor: "border-lime-300 dark:border-lime-800",
+    descriptionEn: "Minor breathing discomfort to sensitive people. Generally acceptable for public.",
+    descriptionHi: "संवेदनशील लोगों को सांस लेने में हल्की असुविधा हो सकती है। सामान्यतः सुरक्षित।",
+    generalAdviceEn: "Normal outdoor activities can proceed comfortably.",
+    generalAdviceHi: "सामान्य बाहरी गतिविधियां आराम से की जा सकती हैं।",
+    sensitiveAdviceEn: "Sensitive individuals should avoid strenuous physical exhaustion outdoors.",
+    sensitiveAdviceHi: "संवेदनशील लोग बाहर अत्यधिक थका देने वाली गतिविधियों से बचें।",
+  },
+  {
+    min: 101,
+    max: 200,
+    labelEn: "Moderate",
+    labelHi: "मध्यम (Moderate)",
+    color: "#eab308",
+    bgColor: "bg-yellow-50 dark:bg-yellow-950/40",
+    textColor: "text-yellow-700 dark:text-yellow-300",
+    borderColor: "border-yellow-300 dark:border-yellow-800",
+    descriptionEn: "Breathing discomfort to people with asthma, lungs, and heart diseases.",
+    descriptionHi: "दमा, फेफड़े और हृदय रोगियों को सांस लेने में परेशानी हो सकती है।",
+    generalAdviceEn: "Consider taking breaks during prolonged outdoor exercise.",
+    generalAdviceHi: "लंबे समय तक बाहर व्यायाम करते समय बीच-बीच में आराम लें।",
+    sensitiveAdviceEn: "Asthma and heart patients should limit heavy outdoor physical exertion.",
+    sensitiveAdviceHi: "दमा और हृदय रोगी बाहर भारी शारीरिक परिश्रम सीमित करें।",
+  },
+  {
+    min: 201,
+    max: 300,
+    labelEn: "Poor",
+    labelHi: "खराब (Poor)",
+    color: "#f97316",
+    bgColor: "bg-orange-50 dark:bg-orange-950/40",
+    textColor: "text-orange-700 dark:text-orange-300",
+    borderColor: "border-orange-300 dark:border-orange-800",
+    descriptionEn: "Breathing discomfort to most people on prolonged exposure.",
+    descriptionHi: "लंबे समय तक बाहर रहने पर अधिकांश लोगों को सांस में तकलीफ हो सकती है।",
+    generalAdviceEn: "Wear an N95 mask outdoors and reduce long outdoor sessions.",
+    generalAdviceHi: "बाहर निकलते समय N95 मास्क पहनें और बाहर अधिक समय न बिताएं।",
+    sensitiveAdviceEn: "Children and elderly should stay indoors; keep doors and windows closed.",
+    sensitiveAdviceHi: "बच्चे और बुजुर्ग घर के अंदर रहें; खिड़कियां बंद रखें।",
+  },
+  {
+    min: 301,
+    max: 400,
+    labelEn: "Very Poor",
+    labelHi: "बहुत खराब (Very Poor)",
+    color: "#ef4444",
+    bgColor: "bg-red-50 dark:bg-red-950/40",
+    textColor: "text-red-700 dark:text-red-300",
+    borderColor: "border-red-300 dark:border-red-800",
+    descriptionEn: "Respiratory illness to the people on prolonged exposure. Pronounced effect on sensitive groups.",
+    descriptionHi: "लंबे समय तक संपर्क में रहने पर श्वसन संबंधी बीमारी हो सकती है।",
+    generalAdviceEn: "Avoid all non-essential outdoor trips. Run HEPA air purifiers at home.",
+    generalAdviceHi: "गैर-जरूरी बाहरी आवागमन से बचें। घर में एयर प्यूरीफायर चालू रखें।",
+    sensitiveAdviceEn: "Remain strictly indoors. Keep emergency inhalers handy.",
+    sensitiveAdviceHi: "पूरी तरह घर में रहें और इनहेलर या दवाइयां पास रखें।",
+  },
+  {
+    min: 401,
+    max: 500,
+    labelEn: "Severe",
+    labelHi: "गंभीर (Severe)",
+    color: "#7f1d1d",
+    bgColor: "bg-rose-100 dark:bg-rose-950/60",
+    textColor: "text-rose-950 dark:text-rose-100",
+    borderColor: "border-rose-400 dark:border-rose-800",
+    descriptionEn: "Affects healthy people and seriously impacts those with existing medical conditions.",
+    descriptionHi: "स्वस्थ लोगों के स्वास्थ्य पर भी बुरा असर पड़ता है और रोगियों पर गंभीर प्रभाव पड़ता है।",
+    generalAdviceEn: "Stay completely indoors. Seal windows. Do not exercise outdoors under any circumstances.",
+    generalAdviceHi: "पूरी तरह घर के अंदर रहें। बाहर व्यायाम बिल्कुल न करें। N95 मास्क के बिना न निकलें।",
+    sensitiveAdviceEn: "Strictly avoid outdoor exposure. Consult a physician if breathing distress occurs.",
+    sensitiveAdviceHi: "बाहर निकलने से पूरी तरह परहेज करें। सांस में दिक्कत होने पर तुरंत डॉक्टर से मिलें।",
   },
 ];
 
@@ -215,13 +314,119 @@ export const EUROPEAN_AQI_SCALE: StandardScaleItem[] = [
   },
 ];
 
+/**
+ * Calculates Indian NAQI Sub-index according to CPCB formulas:
+ * I = I_low + ((I_high - I_low) / (B_high - B_low)) * (C - B_low)
+ */
+function calcSubIndex(val: number, breakpoints: { bLow: number; bHigh: number; iLow: number; iHigh: number }[]): number {
+  if (val <= 0) return 0;
+  for (const bp of breakpoints) {
+    if (val <= bp.bHigh) {
+      const sub = bp.iLow + ((bp.iHigh - bp.iLow) / (bp.bHigh - bp.bLow)) * (val - bp.bLow);
+      return Math.round(sub);
+    }
+  }
+  return 500;
+}
+
+export function calculateIndianNAQI(pollutants: {
+  pm2_5?: number | null;
+  pm10?: number | null;
+  no2?: number | null;
+  so2?: number | null;
+  co?: number | null;
+  o3?: number | null;
+}): number {
+  const pm25Bps = [
+    { bLow: 0, bHigh: 30, iLow: 0, iHigh: 50 },
+    { bLow: 30, bHigh: 60, iLow: 51, iHigh: 100 },
+    { bLow: 60, bHigh: 90, iLow: 101, iHigh: 200 },
+    { bLow: 90, bHigh: 120, iLow: 201, iHigh: 300 },
+    { bLow: 120, bHigh: 250, iLow: 301, iHigh: 400 },
+    { bLow: 250, bHigh: 500, iLow: 401, iHigh: 500 },
+  ];
+
+  const pm10Bps = [
+    { bLow: 0, bHigh: 50, iLow: 0, iHigh: 50 },
+    { bLow: 50, bHigh: 100, iLow: 51, iHigh: 100 },
+    { bLow: 100, bHigh: 250, iLow: 101, iHigh: 200 },
+    { bLow: 250, bHigh: 350, iLow: 201, iHigh: 300 },
+    { bLow: 350, bHigh: 430, iLow: 301, iHigh: 400 },
+    { bLow: 430, bHigh: 600, iLow: 401, iHigh: 500 },
+  ];
+
+  const no2Bps = [
+    { bLow: 0, bHigh: 40, iLow: 0, iHigh: 50 },
+    { bLow: 40, bHigh: 80, iLow: 51, iHigh: 100 },
+    { bLow: 80, bHigh: 180, iLow: 101, iHigh: 200 },
+    { bLow: 180, bHigh: 280, iLow: 201, iHigh: 300 },
+    { bLow: 280, bHigh: 400, iLow: 301, iHigh: 400 },
+    { bLow: 400, bHigh: 600, iLow: 401, iHigh: 500 },
+  ];
+
+  const so2Bps = [
+    { bLow: 0, bHigh: 40, iLow: 0, iHigh: 50 },
+    { bLow: 40, bHigh: 80, iLow: 51, iHigh: 100 },
+    { bLow: 80, bHigh: 380, iLow: 101, iHigh: 200 },
+    { bLow: 380, bHigh: 800, iLow: 201, iHigh: 300 },
+    { bLow: 800, bHigh: 1600, iLow: 301, iHigh: 400 },
+    { bLow: 1600, bHigh: 2000, iLow: 401, iHigh: 500 },
+  ];
+
+  const o3Bps = [
+    { bLow: 0, bHigh: 50, iLow: 0, iHigh: 50 },
+    { bLow: 50, bHigh: 100, iLow: 51, iHigh: 100 },
+    { bLow: 100, bHigh: 168, iLow: 101, iHigh: 200 },
+    { bLow: 168, bHigh: 208, iLow: 201, iHigh: 300 },
+    { bLow: 208, bHigh: 748, iLow: 301, iHigh: 400 },
+    { bLow: 748, bHigh: 1000, iLow: 401, iHigh: 500 },
+  ];
+
+  // Open-Meteo gives CO in μg/m³, CPCB standard uses mg/m³ (divide by 1000)
+  const coMg = typeof pollutants.co === "number" ? pollutants.co / 1000 : 0;
+  const coBps = [
+    { bLow: 0, bHigh: 1.0, iLow: 0, iHigh: 50 },
+    { bLow: 1.0, bHigh: 2.0, iLow: 51, iHigh: 100 },
+    { bLow: 2.0, bHigh: 10, iLow: 101, iHigh: 200 },
+    { bLow: 10, bHigh: 17, iLow: 201, iHigh: 300 },
+    { bLow: 17, bHigh: 34, iLow: 301, iHigh: 400 },
+    { bLow: 34, bHigh: 50, iLow: 401, iHigh: 500 },
+  ];
+
+  const subIndices: number[] = [];
+
+  if (typeof pollutants.pm2_5 === "number" && pollutants.pm2_5 > 0) {
+    subIndices.push(calcSubIndex(pollutants.pm2_5, pm25Bps));
+  }
+  if (typeof pollutants.pm10 === "number" && pollutants.pm10 > 0) {
+    subIndices.push(calcSubIndex(pollutants.pm10, pm10Bps));
+  }
+  if (typeof pollutants.no2 === "number" && pollutants.no2 > 0) {
+    subIndices.push(calcSubIndex(pollutants.no2, no2Bps));
+  }
+  if (typeof pollutants.so2 === "number" && pollutants.so2 > 0) {
+    subIndices.push(calcSubIndex(pollutants.so2, so2Bps));
+  }
+  if (typeof pollutants.o3 === "number" && pollutants.o3 > 0) {
+    subIndices.push(calcSubIndex(pollutants.o3, o3Bps));
+  }
+  if (coMg > 0) {
+    subIndices.push(calcSubIndex(coMg, coBps));
+  }
+
+  if (subIndices.length === 0) return 0;
+  return Math.min(500, Math.max(...subIndices));
+}
+
 export function getAQICategory(
   value: number | null | undefined,
   standard: AQIStandard = "us",
   lang: "en" | "hi" = "en"
 ): AQICategory {
   const val = typeof value === "number" && !isNaN(value) ? Math.max(0, Math.round(value)) : 0;
-  const scale = standard === "us" ? US_AQI_SCALE : EUROPEAN_AQI_SCALE;
+  let scale = US_AQI_SCALE;
+  if (standard === "india") scale = INDIA_NAQI_SCALE;
+  else if (standard === "european") scale = EUROPEAN_AQI_SCALE;
 
   let matched = scale[0];
   for (let i = 0; i < scale.length; i++) {

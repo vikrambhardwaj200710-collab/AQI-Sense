@@ -4,7 +4,7 @@ import React from "react";
 import { Language } from "@/lib/types";
 import { Logo } from "./Logo";
 import { getTranslation } from "@/lib/i18n";
-import { ShieldCheck, Heart, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 
 interface FooterProps {
   lang: Language;
@@ -39,7 +39,7 @@ export function Footer({ lang }: FooterProps) {
             </a>
             <span>&</span>
             <span className="font-semibold text-purple-600 dark:text-purple-400">
-              Google Gemini
+              Advanced Atmospheric AI
             </span>
           </div>
 
@@ -48,7 +48,9 @@ export function Footer({ lang }: FooterProps) {
           </p>
 
           <div className="text-[11px] text-zinc-400 mt-1">
-            © {new Date().getFullYear()} AQI Guardian. Free, open, and privacy-first environmental intelligence.
+            {isHi
+              ? `© ${new Date().getFullYear()} AQI Sense. निरंतर वैश्विक वायुमंडलीय निगरानी, पर्यावरणीय पारदर्शिता और जनस्वास्थ्य सुरक्षा के लिए समर्पित।`
+              : `© ${new Date().getFullYear()} AQI Sense. Dedicated to continuous planetary atmospheric monitoring, environmental transparency, and safeguarding global community health.`}
           </div>
         </div>
       </div>

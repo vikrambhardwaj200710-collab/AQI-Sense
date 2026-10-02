@@ -9,7 +9,7 @@ interface RequestBody {
     longitude: number;
   };
   aqi: number;
-  standard: "us" | "european";
+  standard: "us" | "european" | "india";
   categoryLabel: string;
   pollutants: {
     pm2_5?: number | null;
@@ -32,24 +32,25 @@ interface RequestBody {
 
 function generateFallbackInsight(body: RequestBody) {
   const isHi = body.language === "hi";
-  const standardName = body.standard === "us" ? "U.S. EPA AQI" : "European EAQI";
+  const standardName =
+    body.standard === "india"
+      ? "India National AQI (CPCB)"
+      : body.standard === "us"
+      ? "U.S. EPA AQI"
+      : "European EAQI";
   const { aqi, categoryLabel, location, pollutants, weather, trend24h } = body;
 
   // Identify highest relative pollutant
-  let topPollutant = "PM2.5";
   let concernTextEn = "Fine particulate matter (PM2.5) is the primary driver of ambient air pollution.";
   let concernTextHi = "अति सूक्ष्म कण (PM2.5) वर्तमान में वायु प्रदूषण का मुख्य कारण हैं।";
 
   if ((pollutants.o3 ?? 0) > 100 && (pollutants.o3 ?? 0) > (pollutants.pm2_5 ?? 0) * 1.5) {
-    topPollutant = "Ground-level Ozone (O₃)";
     concernTextEn = "Photochemical ozone (O₃) concentrations are elevated, likely accentuated by strong sunlight.";
     concernTextHi = "ज़मीनी ओजोन (O₃) का स्तर बढ़ा हुआ है, जो धूप और रासायनिक प्रतिक्रियाओं से बढ़ सकता है।";
   } else if ((pollutants.pm10 ?? 0) > 150 && (pollutants.pm10 ?? 0) > (pollutants.pm2_5 ?? 0) * 2.5) {
-    topPollutant = "Coarse Particulates (PM10)";
     concernTextEn = "Coarse airborne dust (PM10) is elevated, reflecting surface wind agitation or regional dust transport.";
     concernTextHi = "धूल और मोटे कण (PM10) बढ़े हुए हैं, जो सतह की हवाओं या धूल भरी परिस्थितियों का संकेत देते हैं।";
   } else if ((pollutants.no2 ?? 0) > 80) {
-    topPollutant = "Nitrogen Dioxide (NO₂)";
     concernTextEn = "Combustion byproduct NO₂ is notable, indicating heavy traffic density or local industrial activity.";
     concernTextHi = "नाइट्रोजन डाइऑक्साइड (NO₂) की मात्रा अधिक है, जो वाहनों के धुएं या औद्योगिक गतिविधियों से जुड़ी है।";
   }
@@ -76,7 +77,7 @@ function generateFallbackInsight(body: RequestBody) {
     activityEn = "Healthy adults can exercise outdoors but consider moderating duration. Children and elderly should limit intense outdoor games.";
     activityHi = "स्वस्थ वयस्क बाहर जा सकते हैं पर समय सीमित करें। बच्चों और बुजुर्गों को भारी खेलकूद से बचना चाहिए।";
   } else if (aqi <= 200) {
-    actionEn = "Wear a well-fitted N95/FFP2 mask when stepping outside. Run indoor HEPA air purifiers and seal gaps in windows.";
+    actionEn = "Wear a well-fitted N95 mask when stepping outside. Run indoor HEPA air purifiers and seal gaps in windows.";
     actionHi = "बाहर जाते समय N95 मास्क अवश्य पहनें। इनडोर एयर प्यूरीफायर चलाएं और खिड़कियां बंद रखें।";
     activityEn = "Avoid prolonged or strenuous outdoor activities. Shift workouts indoors to clean, filtered environments.";
     activityHi = "बाहरी व्यायाम से बचें। अपने वर्कआउट को घर के अंदर स्वच्छ हवा में स्थानांतरित करें।";
@@ -115,7 +116,6 @@ export async function POST(req: NextRequest) {
     const body: RequestBody = await req.json();
     const apiKey = process.env.GEMINI_API_KEY;
 
-    // If no API key configured, seamlessly return high-quality rule-based synthesis
     if (!apiKey || apiKey.trim() === "" || apiKey === "your_actual_gemini_api_key_here") {
       return NextResponse.json(generateFallbackInsight(body));
     }
@@ -123,12 +123,19 @@ export async function POST(req: NextRequest) {
     const { location, aqi, standard, categoryLabel, pollutants, weather, trend24h, language } = body;
     const isHi = language === "hi";
 
+    const standardFormatted =
+      standard === "india"
+        ? "India National AQI - CPCB (0-500 scale)"
+        : standard === "us"
+        ? "U.S. EPA AQI (0-500 scale)"
+        : "European EAQI (0-100+ scale)";
+
     const promptText = `
-You are the atmospheric analysis intelligence for AQI Guardian, an environmental intelligence platform.
+You are the atmospheric analysis intelligence for AQI Sense, an advanced environmental intelligence platform.
 Analyze the following real modeled air-quality and meteorological data for:
 Location: ${location.name}, ${location.admin1 || ""} ${location.country || ""} (Lat: ${location.latitude}, Lon: ${location.longitude})
 AQI Value: ${aqi}
-AQI Standard: ${standard === "us" ? "U.S. EPA AQI (0-500 scale)" : "European EAQI (0-100+ scale)"}
+AQI Standard: ${standardFormatted}
 Current Category: ${categoryLabel}
 Pollutant Concentrations:
 - PM2.5: ${pollutants.pm2_5 ?? "N/A"} μg/m³
@@ -161,10 +168,9 @@ CRITICAL RULES:
 Return ONLY the raw JSON object, without markdown backticks or commentary.
 `;
 
-    // Attempt Gemini 2.5-flash / 1.5-flash REST API
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
-    const geminiRes = await fetch(geminiUrl, {
+    const apiRes = await fetch(apiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -182,19 +188,18 @@ Return ONLY the raw JSON object, without markdown backticks or commentary.
       }),
     });
 
-    if (!geminiRes.ok) {
-      console.warn(`Gemini API returned status ${geminiRes.status}, falling back to intelligent synthesizer.`);
+    if (!apiRes.ok) {
+      console.warn(`AI API returned status ${apiRes.status}, falling back to intelligent synthesizer.`);
       return NextResponse.json(generateFallbackInsight(body));
     }
 
-    const geminiData = await geminiRes.json();
-    const rawCandidate = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+    const apiData = await apiRes.json();
+    const rawCandidate = apiData.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!rawCandidate) {
       return NextResponse.json(generateFallbackInsight(body));
     }
 
-    // Clean JSON response
     const cleanJson = rawCandidate.replace(/```json/g, "").replace(/```/g, "").trim();
     const parsed = JSON.parse(cleanJson);
 
@@ -209,7 +214,6 @@ Return ONLY the raw JSON object, without markdown backticks or commentary.
     });
   } catch (error) {
     console.error("AI Insight Route Handler Error:", error);
-    // Graceful fallback: do not crash the app
     try {
       const fallbackBody = await req.json();
       return NextResponse.json(generateFallbackInsight(fallbackBody));

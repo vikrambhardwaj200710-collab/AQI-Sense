@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { AirQualityResponse, AQIStandard, Language } from "@/lib/types";
-import { getAQICategory } from "@/lib/aqi-standards";
+import { calculateIndianNAQI, getAQICategory } from "@/lib/aqi-standards";
 import { getTranslation } from "@/lib/i18n";
 import {
   ResponsiveContainer,
@@ -14,7 +14,7 @@ import {
   CartesianGrid,
   Cell,
 } from "recharts";
-import { CalendarDays, TrendingUp, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 interface AQIForecastProps {
   data: AirQualityResponse;
@@ -31,7 +31,6 @@ export function AQIForecast({ data, standard, lang }: AQIForecastProps) {
   }, []);
 
   const isHi = lang === "hi";
-  const aqiKey = standard === "us" ? "us_aqi" : "european_aqi";
 
   // Process next 48-72 hours forecast data
   const forecastData = useMemo(() => {
@@ -42,9 +41,25 @@ export function AQIForecast({ data, standard, lang }: AQIForecastProps) {
     let startIndex = hourly.time.findIndex((t) => t >= currentTime);
     if (startIndex === -1) startIndex = 0;
 
-    // Look ahead 48 hours for hourly view
     const futureTimes = hourly.time.slice(startIndex, startIndex + 48);
-    const futureAqi = ((hourly as any)[aqiKey] as number[])?.slice(startIndex, startIndex + 48) || [];
+
+    let futureAqi: number[] = [];
+    if (standard === "india") {
+      futureAqi = futureTimes.map((_, idx) => {
+        const actualIdx = startIndex + idx;
+        return calculateIndianNAQI({
+          pm2_5: hourly.pm2_5?.[actualIdx],
+          pm10: hourly.pm10?.[actualIdx],
+          no2: hourly.nitrogen_dioxide?.[actualIdx],
+          so2: hourly.sulphur_dioxide?.[actualIdx],
+          co: hourly.carbon_monoxide?.[actualIdx],
+          o3: hourly.ozone?.[actualIdx],
+        });
+      });
+    } else {
+      const aqiKey = standard === "us" ? "us_aqi" : "european_aqi";
+      futureAqi = (((hourly as any)[aqiKey] as number[]) || []).slice(startIndex, startIndex + 48);
+    }
 
     return futureTimes.map((timeStr, idx) => {
       const d = new Date(timeStr);
@@ -60,7 +75,7 @@ export function AQIForecast({ data, standard, lang }: AQIForecastProps) {
         color: cat.color,
       };
     });
-  }, [data, standard, lang, aqiKey, isHi]);
+  }, [data, standard, lang, isHi]);
 
   // Aggregate daily averages
   const dailyData = useMemo(() => {
@@ -69,14 +84,28 @@ export function AQIForecast({ data, standard, lang }: AQIForecastProps) {
 
     const grouped: Record<string, number[]> = {};
     const currentTime = data.current.time || new Date().toISOString();
-    const futureTimes = hourly.time.filter((t) => t >= currentTime.slice(0, 10));
-    const aqiArr = (hourly as any)[aqiKey] || [];
 
     hourly.time.forEach((t, i) => {
       if (t >= currentTime.slice(0, 10)) {
         const dateKey = t.slice(0, 10);
         if (!grouped[dateKey]) grouped[dateKey] = [];
-        grouped[dateKey].push(aqiArr[i] ?? 0);
+
+        let aqiVal = 0;
+        if (standard === "india") {
+          aqiVal = calculateIndianNAQI({
+            pm2_5: hourly.pm2_5?.[i],
+            pm10: hourly.pm10?.[i],
+            no2: hourly.nitrogen_dioxide?.[i],
+            so2: hourly.sulphur_dioxide?.[i],
+            co: hourly.carbon_monoxide?.[i],
+            o3: hourly.ozone?.[i],
+          });
+        } else {
+          const aqiKey = standard === "us" ? "us_aqi" : "european_aqi";
+          aqiVal = (hourly as any)[aqiKey]?.[i] ?? 0;
+        }
+
+        grouped[dateKey].push(aqiVal);
       }
     });
 
@@ -100,13 +129,16 @@ export function AQIForecast({ data, standard, lang }: AQIForecastProps) {
           color: cat.color,
         };
       });
-  }, [data, standard, lang, aqiKey, isHi]);
+  }, [data, standard, lang, isHi]);
 
   // Find peak forecast hour
   const peakForecastHour = useMemo(() => {
     if (forecastData.length === 0) return null;
     return [...forecastData].sort((a, b) => b.aqi - a.aqi)[0];
   }, [forecastData]);
+
+  const standardLabel =
+    standard === "india" ? "India NAQI" : standard === "us" ? "US AQI" : "EAQI";
 
   return (
     <section className="w-full flex flex-col gap-4">
@@ -157,8 +189,8 @@ export function AQIForecast({ data, standard, lang }: AQIForecastProps) {
           <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
           <span>
             {isHi
-              ? `पूर्वानुमान चेतावनी: ${peakForecastHour.date} ${peakForecastHour.time} के आसपास AQI ~${peakForecastHour.aqi} (${peakForecastHour.category}) तक पहुंचने की संभावना है।`
-              : `Forecast Alert: Atmospheric stagnation expected around ${peakForecastHour.date} ${peakForecastHour.time} with projected AQI ~${peakForecastHour.aqi} (${peakForecastHour.category}).`}
+              ? `पूर्वानुमान चेतावनी: ${peakForecastHour.date} ${peakForecastHour.time} के आसपास ${standardLabel} ~${peakForecastHour.aqi} (${peakForecastHour.category}) तक पहुंचने की संभावना है।`
+              : `Forecast Alert: Atmospheric stagnation expected around ${peakForecastHour.date} ${peakForecastHour.time} with projected ${standardLabel} ~${peakForecastHour.aqi} (${peakForecastHour.category}).`}
           </span>
         </div>
       )}
@@ -196,7 +228,7 @@ export function AQIForecast({ data, standard, lang }: AQIForecastProps) {
                             </div>
                             <div className="flex items-center justify-between gap-3">
                               <span className="font-semibold text-zinc-200">
-                                {standard === "us" ? "US AQI:" : "EAQI:"}
+                                {standardLabel}:
                               </span>
                               <span className="font-bold font-mono text-sm" style={{ color: d.color }}>
                                 {d.aqi}
@@ -227,7 +259,7 @@ export function AQIForecast({ data, standard, lang }: AQIForecastProps) {
         ) : (
           /* Daily Cards View */
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 py-2">
-            {dailyData.map((day, idx) => (
+            {dailyData.map((day) => (
               <div
                 key={day.dateStr}
                 className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/80 flex flex-col justify-between"

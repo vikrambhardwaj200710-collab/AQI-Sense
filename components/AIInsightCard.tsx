@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { AIInsightData, AirQualityResponse, AQICategory, AQIStandard, Language, LocationData, WeatherResponse } from "@/lib/types";
 import { getTranslation } from "@/lib/i18n";
-import { Sparkles, Bot, AlertCircle, RefreshCw, CheckCircle2, ShieldAlert, HeartHandshake, Compass, Activity, ArrowRight } from "lucide-react";
+import { Sparkles, Bot, AlertCircle, RefreshCw, CheckCircle2, ShieldAlert, HeartHandshake, Compass, Activity } from "lucide-react";
 
 interface AIInsightCardProps {
   location: LocationData;
@@ -30,8 +30,8 @@ export function AIInsightCard({
     setLoading(true);
     setError(null);
 
-    const aqiKey = standard === "us" ? "us_aqi" : "european_aqi";
-    const currentAqi = aqiData.current[aqiKey] ?? 50;
+    const aqiKey = standard === "us" ? "us_aqi" : standard === "india" ? "india_aqi" : "european_aqi";
+    const currentAqi = (aqiData.current as any)[aqiKey] ?? 50;
 
     // Compute recent 24h trend direction
     const hourlyAqi = ((aqiData.hourly as any)?.[aqiKey] as number[]) || [];
@@ -109,7 +109,7 @@ export function AIInsightCard({
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               <span>{getTranslation(lang, "aiInsightTitle")}</span>
               <span className="text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950/80 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                Gemini AI
+                AI Air Intelligence
               </span>
             </h2>
             <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
@@ -144,8 +144,8 @@ export function AIInsightCard({
                   ? "स्मार्ट वायुमंडलीय संश्लेषण (ऑफ़लाइन मोड)"
                   : "Atmospheric Intelligence Synthesizer"
                 : lang === "hi"
-                ? "Google Gemini 2.5 लाइव विश्लेषण"
-                : "Google Gemini 2.5 Live Analysis"}
+                ? "लाइव न्यूरल वायुमंडलीय संश्लेषण"
+                : "Live Neural Atmospheric Synthesis"}
             </span>
           </div>
 

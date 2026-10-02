@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { AQIStandard, Language, LocationData, Theme } from "@/lib/types";
 import { Logo } from "./Logo";
 import { LocationSearch } from "./LocationSearch";
@@ -9,10 +9,7 @@ import {
   Sun,
   Moon,
   Laptop,
-  Languages,
   RefreshCw,
-  SlidersHorizontal,
-  ChevronDown,
 } from "lucide-react";
 
 interface HeaderProps {
@@ -45,12 +42,12 @@ export function Header({
   return (
     <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-white/80 dark:bg-zinc-950/80 border-b border-zinc-200/80 dark:border-zinc-800/80 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-        {/* Left: Brand Identity */}
+        {/* Left: AQI Sense Brand Identity */}
         <div className="flex-shrink-0">
           <Logo isHindi={isHi} />
         </div>
 
-        {/* Center: Powerful Location Search */}
+        {/* Center: Location Search */}
         <div className="flex-1 max-w-md hidden md:block">
           <LocationSearch
             currentLocation={currentLocation}
@@ -59,15 +56,15 @@ export function Header({
           />
         </div>
 
-        {/* Right Controls: Standard, Language, Theme, Refresh */}
+        {/* Right Controls: Standard (US / India / EAQI), Language, Theme, Refresh */}
         <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* AQI Standard Selector */}
+          {/* AQI Standard Selector (US, India NAQI, European EAQI) */}
           <div className="relative inline-flex items-center p-0.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
             <button
               type="button"
               onClick={() => onSelectStandard("us")}
               title="US EPA AQI Standard (0-500 scale)"
-              className={`px-2 sm:px-2.5 py-1 text-xs font-bold rounded-lg transition-colors ${
+              className={`px-2 py-1 text-xs font-bold rounded-lg transition-colors ${
                 standard === "us"
                   ? "bg-white dark:bg-zinc-700 text-emerald-600 dark:text-emerald-400 shadow-sm"
                   : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
@@ -77,9 +74,21 @@ export function Header({
             </button>
             <button
               type="button"
+              onClick={() => onSelectStandard("india")}
+              title="India National AQI - CPCB Standard (0-500 scale)"
+              className={`px-2 py-1 text-xs font-bold rounded-lg transition-colors ${
+                standard === "india"
+                  ? "bg-white dark:bg-zinc-700 text-emerald-600 dark:text-emerald-400 shadow-sm"
+                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
+              }`}
+            >
+              {isHi ? "भारतीय NAQI" : "India NAQI"}
+            </button>
+            <button
+              type="button"
               onClick={() => onSelectStandard("european")}
               title="European EAQI Standard (0-100+ scale)"
-              className={`px-2 sm:px-2.5 py-1 text-xs font-bold rounded-lg transition-colors ${
+              className={`px-2 py-1 text-xs font-bold rounded-lg transition-colors ${
                 standard === "european"
                   ? "bg-white dark:bg-zinc-700 text-emerald-600 dark:text-emerald-400 shadow-sm"
                   : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"

@@ -5,7 +5,7 @@ import { AQICategory, AQIStandard, Language, LocationData } from "@/lib/types";
 import { AQIGauge } from "./AQIGauge";
 import { AQIScaleLegend } from "./AQIScaleLegend";
 import { getTranslation } from "@/lib/i18n";
-import { MapPin, Info, Clock, Database, ShieldAlert, HeartPulse, RefreshCw } from "lucide-react";
+import { MapPin, Info, Clock, Database, ShieldAlert, HeartPulse, RefreshCw, ArrowRightLeft } from "lucide-react";
 
 interface HeroDashboardProps {
   location: LocationData;
@@ -17,7 +17,6 @@ interface HeroDashboardProps {
   isRefreshing?: boolean;
   onRefresh?: () => void;
   onOpenCompare?: () => void;
-  onOpenReport?: () => void;
 }
 
 export function HeroDashboard({
@@ -30,7 +29,6 @@ export function HeroDashboard({
   isRefreshing = false,
   onRefresh,
   onOpenCompare,
-  onOpenReport,
 }: HeroDashboardProps) {
   const isHi = lang === "hi";
 
@@ -38,16 +36,16 @@ export function HeroDashboard({
     <div className="w-full flex flex-col gap-4">
       {/* Main Hero Card */}
       <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm p-6 sm:p-8 transition-colors">
-        {/* Subtle Ambient Background Gradient */}
+        {/* Subtle Ambient Background Glow */}
         <div
           className="absolute -top-32 -right-32 w-96 h-96 rounded-full blur-3xl opacity-20 pointer-events-none transition-all duration-700"
           style={{ backgroundColor: category.color }}
         />
 
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-          {/* Left Column: Location & Main Info */}
+          {/* Left Column: Location, Category & Primary Guidance */}
           <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left">
-            {/* Location Header */}
+            {/* Location Header Pill */}
             <div className="flex items-center gap-2 mb-2 flex-wrap justify-center lg:justify-start">
               <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
                 <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -68,7 +66,7 @@ export function HeroDashboard({
               </span>
             </div>
 
-            {/* Big Headline */}
+            {/* Headline */}
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50">
               {getTranslation(lang, "currentAirQuality")}
             </h1>
@@ -80,8 +78,8 @@ export function HeroDashboard({
               </p>
             </div>
 
-            {/* Health & Action Advice Box */}
-            <div className="mt-4 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/80 max-w-xl text-left">
+            {/* Health & Action Guidance Box */}
+            <div className="mt-4 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/80 max-w-xl text-left w-full">
               <div className="flex items-start gap-3">
                 <div
                   className="p-2 rounded-xl flex-shrink-0"
@@ -107,7 +105,7 @@ export function HeroDashboard({
               </div>
             </div>
 
-            {/* Action Bar / Timestamps */}
+            {/* Meta Actions & Timestamp */}
             <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400 justify-center lg:justify-start">
               <div className="flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-zinc-400" />
@@ -120,7 +118,7 @@ export function HeroDashboard({
 
               <div className="flex items-center gap-1.5">
                 <Database className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span>Open-Meteo Global CAMS</span>
+                <span>Open-Meteo Regional Model</span>
               </div>
 
               {onRefresh && (
@@ -137,40 +135,31 @@ export function HeroDashboard({
             </div>
           </div>
 
-          {/* Right Column: Visual Animated AQI Gauge */}
-          <div className="flex flex-col items-center justify-center p-2 sm:p-4">
+          {/* Right Column: Horizontal Car Speedometer Gauge */}
+          <div className="flex flex-col items-center justify-center p-2 sm:p-4 w-full lg:w-auto">
             <AQIGauge
               aqi={aqi}
               category={category}
               standard={standard}
-              size={290}
             />
 
-            {/* Quick Action Buttons */}
-            <div className="mt-4 flex items-center gap-2">
-              {onOpenCompare && (
+            {/* Compare Cities Action */}
+            {onOpenCompare && (
+              <div className="mt-4 flex items-center justify-center">
                 <button
                   type="button"
                   onClick={onOpenCompare}
-                  className="px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 transition-colors shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 transition-colors shadow-sm"
                 >
-                  {getTranslation(lang, "compareCities")}
+                  <ArrowRightLeft className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>{getTranslation(lang, "compareCities")}</span>
                 </button>
-              )}
-              {onOpenReport && (
-                <button
-                  type="button"
-                  onClick={onOpenReport}
-                  className="px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800 transition-colors shadow-sm"
-                >
-                  {getTranslation(lang, "downloadReport")}
-                </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Mandatory Open-Meteo Model Disclaimer */}
+        {/* Model Disclaimer */}
         <div className="mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-800/80 flex items-start sm:items-center gap-2 text-xs text-zinc-400 dark:text-zinc-500">
           <Info className="w-4 h-4 flex-shrink-0 text-zinc-400 mt-0.5 sm:mt-0" />
           <p className="leading-snug">
@@ -179,7 +168,7 @@ export function HeroDashboard({
         </div>
       </div>
 
-      {/* AQI Scale Legend Component */}
+      {/* AQI Scale Legend */}
       <AQIScaleLegend
         currentAqi={aqi}
         standard={standard}

@@ -1,4 +1,4 @@
-export type AQIStandard = "us" | "european";
+export type AQIStandard = "us" | "european" | "india";
 
 export type Language = "en" | "hi";
 
@@ -20,6 +20,7 @@ export interface CurrentAQIData {
   time: string;
   us_aqi?: number | null;
   european_aqi?: number | null;
+  india_aqi?: number | null;
   pm10?: number | null;
   pm2_5?: number | null;
   carbon_monoxide?: number | null;
@@ -32,6 +33,7 @@ export interface HourlyAQIData {
   time: string[];
   us_aqi?: (number | null)[];
   european_aqi?: (number | null)[];
+  india_aqi?: (number | null)[];
   pm10?: (number | null)[];
   pm2_5?: (number | null)[];
   carbon_monoxide?: (number | null)[];

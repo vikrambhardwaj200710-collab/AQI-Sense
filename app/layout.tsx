@@ -2,31 +2,32 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AQI Guardian — Real-Time Environmental Intelligence & Air Defense",
+  title: "AQI Sense — Real-Time Environmental Intelligence & Air Defense",
   description:
-    "Accurate global air quality monitoring and atmospheric intelligence powered by Open-Meteo regional modeling and Google Gemini AI. Track PM2.5, PM10, Ozone, weather correlations, and personalized health guidance.",
+    "Accurate global air quality monitoring and atmospheric intelligence powered by Open-Meteo regional modeling and Advanced Atmospheric AI. Track PM2.5, PM10, Ozone, weather correlations, and personalized health guidance.",
   keywords: [
     "AQI",
     "Air Quality Index",
-    "AQI Guardian",
+    "AQI Sense",
+    "NAQI",
+    "India AQI",
     "PM2.5",
     "PM10",
     "Ozone",
     "Open-Meteo",
-    "Gemini AI",
     "Weather",
     "Air Pollution",
   ],
-  authors: [{ name: "AQI Guardian Team" }],
+  authors: [{ name: "AQI Sense Team" }],
   openGraph: {
-    title: "AQI Guardian — Real-Time Environmental Intelligence",
+    title: "AQI Sense — Real-Time Environmental Intelligence",
     description:
-      "Interactive air quality monitoring, diurnal air stories, optimal outdoor window finder, and Gemini AI health insights.",
+      "Interactive air quality monitoring, diurnal air stories, optimal outdoor window finder, and AI atmospheric health insights.",
     type: "website",
     locale: "en_US",
   },
   icons: {
-    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><path d='M24 4L39 9.5V21C39 31.5 32.5 39.8 24 44C15.5 39.8 9 31.5 9 21V9.5L24 4Z' fill='%2310b981'/><path d='M16 19C19 16.5 24 16.5 27 19C30 21.5 33 21 35 19.5' stroke='white' stroke-width='3'/></svg>",
+    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><path d='M8 24C8 15.16 15.16 8 24 8C32.84 8 40 15.16 40 24' stroke='%2310b981' stroke-width='4' fill='none'/><circle cx='24' cy='24' r='4' fill='%2310b981'/></svg>",
   },
 };
 

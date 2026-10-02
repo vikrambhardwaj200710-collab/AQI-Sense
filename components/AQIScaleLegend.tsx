@@ -2,7 +2,7 @@
 
 import React from "react";
 import { AQIStandard, Language } from "@/lib/types";
-import { US_AQI_SCALE, EUROPEAN_AQI_SCALE } from "@/lib/aqi-standards";
+import { US_AQI_SCALE, EUROPEAN_AQI_SCALE, INDIA_NAQI_SCALE } from "@/lib/aqi-standards";
 import { getTranslation } from "@/lib/i18n";
 
 interface AQIScaleLegendProps {
@@ -12,8 +12,18 @@ interface AQIScaleLegendProps {
 }
 
 export function AQIScaleLegend({ currentAqi, standard, lang }: AQIScaleLegendProps) {
-  const scale = standard === "us" ? US_AQI_SCALE : EUROPEAN_AQI_SCALE;
+  let scale = US_AQI_SCALE;
+  if (standard === "india") scale = INDIA_NAQI_SCALE;
+  else if (standard === "european") scale = EUROPEAN_AQI_SCALE;
+
   const isHi = lang === "hi";
+
+  const standardSubtitle =
+    standard === "india"
+      ? "India CPCB Breakpoints (0 - 500)"
+      : standard === "european"
+      ? "European EAQI Breakpoints (0 - 100+)"
+      : "EPA Breakpoints (0 - 500)";
 
   return (
     <div className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-sm">
@@ -22,7 +32,7 @@ export function AQIScaleLegend({ currentAqi, standard, lang }: AQIScaleLegendPro
           {getTranslation(lang, "scaleLegendTitle")}
         </h3>
         <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-          {standard === "us" ? "EPA Breakpoints (0 - 500)" : "European EAQI Breakpoints (0 - 100+)"}
+          {standardSubtitle}
         </span>
       </div>
 

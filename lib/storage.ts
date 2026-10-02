@@ -71,7 +71,7 @@ export function getStoredStandard(): AQIStandard {
   if (typeof window === "undefined") return "us";
   try {
     const stored = localStorage.getItem(AQI_STANDARD_KEY);
-    if (stored === "us" || stored === "european") return stored;
+    if (stored === "us" || stored === "european" || stored === "india") return stored;
   } catch (e) {}
   return "us";
 }

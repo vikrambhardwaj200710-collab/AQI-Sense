@@ -3,9 +3,9 @@
 import React, { useState } from "react";
 import { AirQualityResponse, AQIStandard, Language, LocationData, WeatherResponse } from "@/lib/types";
 import { searchLocations, fetchCombinedData } from "@/lib/api";
-import { getAQICategory } from "@/lib/aqi-standards";
+import { calculateIndianNAQI, getAQICategory } from "@/lib/aqi-standards";
 import { getTranslation } from "@/lib/i18n";
-import { X, Search, Loader2, ArrowRightLeft, MapPin, Sparkles, Check, AlertCircle } from "lucide-react";
+import { X, Search, Loader2, ArrowRightLeft, Sparkles } from "lucide-react";
 
 interface CompareLocationsModalProps {
   primaryLocation: LocationData;
@@ -34,7 +34,21 @@ export function CompareLocationsModal({
   const [targetError, setTargetError] = useState<string | null>(null);
 
   const isHi = lang === "hi";
-  const aqiKey = standard === "us" ? "us_aqi" : "european_aqi";
+
+  const getAqiValue = (data: AirQualityResponse): number => {
+    if (standard === "india") {
+      return calculateIndianNAQI({
+        pm2_5: data.current.pm2_5,
+        pm10: data.current.pm10,
+        no2: data.current.nitrogen_dioxide,
+        so2: data.current.sulphur_dioxide,
+        co: data.current.carbon_monoxide,
+        o3: data.current.ozone,
+      });
+    }
+    const aqiKey = standard === "us" ? "us_aqi" : "european_aqi";
+    return data.current[aqiKey] ?? 0;
+  };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,10 +82,10 @@ export function CompareLocationsModal({
     }
   };
 
-  const primaryAqi = primaryAqiData.current[aqiKey] ?? 0;
+  const primaryAqi = getAqiValue(primaryAqiData);
   const primaryCat = getAQICategory(primaryAqi, standard, lang);
 
-  const targetAqi = targetAqiData ? targetAqiData.current[aqiKey] ?? 0 : null;
+  const targetAqi = targetAqiData ? getAqiValue(targetAqiData) : null;
   const targetCat = targetAqi !== null ? getAQICategory(targetAqi, standard, lang) : null;
 
   // Comparison verdict
@@ -94,6 +108,13 @@ export function CompareLocationsModal({
     }
   }
 
+  const standardName =
+    standard === "india"
+      ? "India NAQI (CPCB)"
+      : standard === "european"
+      ? "European EAQI"
+      : "U.S. EPA AQI";
+
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
       <div className="relative w-full max-w-3xl rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl p-6 sm:p-8 my-8 text-zinc-900 dark:text-zinc-100">
@@ -108,7 +129,7 @@ export function CompareLocationsModal({
                 {getTranslation(lang, "compareTitle")}
               </h2>
               <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                {standard === "us" ? "U.S. EPA AQI Standard" : "European EAQI Standard"}
+                {standardName}
               </span>
             </div>
           </div>

@@ -10,7 +10,7 @@ import {
   WeatherResponse,
 } from "@/lib/types";
 import { fetchCombinedData } from "@/lib/api";
-import { getAQICategory } from "@/lib/aqi-standards";
+import { calculateIndianNAQI, getAQICategory } from "@/lib/aqi-standards";
 import {
   DEFAULT_LOCATION,
   getStoredLanguage,
@@ -24,28 +24,27 @@ import {
 import { getTranslation } from "@/lib/i18n";
 import { Header } from "@/components/Header";
 import { HeroDashboard } from "@/components/HeroDashboard";
-import { BestWindowCard } from "@/components/BestWindowCard";
 import { AIInsightCard } from "@/components/AIInsightCard";
-import { AQIStoryCard } from "@/components/AQIStoryCard";
 import { PollutantsGrid } from "@/components/PollutantsGrid";
 import { WeatherSection } from "@/components/WeatherSection";
+import { AQIStoryCard } from "@/components/AQIStoryCard";
+import { BestWindowCard } from "@/components/BestWindowCard";
 import { AQITimeline } from "@/components/AQITimeline";
 import { AQIForecast } from "@/components/AQIForecast";
 import { PreventiveMeasures } from "@/components/PreventiveMeasures";
 import { EducationSection } from "@/components/EducationSection";
 import { CompareLocationsModal } from "@/components/CompareLocationsModal";
-import { ReportModal } from "@/components/ReportModal";
 import { Footer } from "@/components/Footer";
 import { Loader2, AlertCircle, RefreshCw } from "lucide-react";
 
 export default function HomePage() {
-  // State for user preferences
+  // User Preferences
   const [location, setLocation] = useState<LocationData>(DEFAULT_LOCATION);
   const [standard, setStandard] = useState<AQIStandard>("us");
   const [lang, setLang] = useState<Language>("en");
   const [theme, setTheme] = useState<Theme>("system");
 
-  // API Data States
+  // API Data
   const [airQualityData, setAirQualityData] = useState<AirQualityResponse | null>(null);
   const [weatherData, setWeatherData] = useState<WeatherResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,11 +52,10 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdatedTime, setLastUpdatedTime] = useState<string>("");
 
-  // Modals
+  // Compare Cities Modal
   const [isCompareOpen, setIsCompareOpen] = useState(false);
-  const [isReportOpen, setIsReportOpen] = useState(false);
 
-  // Initialize preferences on client mount
+  // Initialize stored preferences
   useEffect(() => {
     const storedStd = getStoredStandard();
     const storedLang = getStoredLanguage();
@@ -73,7 +71,7 @@ export default function HomePage() {
     }
   }, []);
 
-  // Sync Theme Class to documentElement
+  // Sync Theme class
   useEffect(() => {
     const root = document.documentElement;
     if (theme === "dark") {
@@ -81,7 +79,6 @@ export default function HomePage() {
     } else if (theme === "light") {
       root.classList.remove("dark");
     } else {
-      // System
       const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
       if (mediaQuery.matches) {
         root.classList.add("dark");
@@ -92,7 +89,6 @@ export default function HomePage() {
     saveStoredTheme(theme);
   }, [theme]);
 
-  // Handle Standard and Language changes
   const handleSelectStandard = (newStd: AQIStandard) => {
     setStandard(newStd);
     saveStoredStandard(newStd);
@@ -140,14 +136,29 @@ export default function HomePage() {
     [lang]
   );
 
-  // Trigger data load when location changes
   useEffect(() => {
     loadData(location);
   }, [location, loadData]);
 
-  // Derived current AQI value & category
-  const aqiKey = standard === "us" ? "us_aqi" : "european_aqi";
-  const currentAqi = airQualityData?.current?.[aqiKey] ?? 0;
+  // Compute current AQI value according to active standard
+  let currentAqi = 0;
+  if (airQualityData) {
+    if (standard === "india") {
+      currentAqi = calculateIndianNAQI({
+        pm2_5: airQualityData.current.pm2_5,
+        pm10: airQualityData.current.pm10,
+        no2: airQualityData.current.nitrogen_dioxide,
+        so2: airQualityData.current.sulphur_dioxide,
+        co: airQualityData.current.carbon_monoxide,
+        o3: airQualityData.current.ozone,
+      });
+    } else if (standard === "us") {
+      currentAqi = airQualityData.current.us_aqi ?? 0;
+    } else {
+      currentAqi = airQualityData.current.european_aqi ?? 0;
+    }
+  }
+
   const currentCategory = getAQICategory(currentAqi, standard, lang);
 
   return (
@@ -166,9 +177,9 @@ export default function HomePage() {
         isRefreshing={isRefreshing}
       />
 
-      {/* Main Page Body */}
+      {/* Main Page Body: Ordered exactly as specified */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
-        {/* Error Notification Banner */}
+        {/* Error Notification */}
         {error && (
           <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-200 flex items-center justify-between gap-3 text-sm">
             <div className="flex items-center gap-2">
@@ -186,7 +197,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Loading Screen */}
+        {/* Loading Skeleton */}
         {isLoading && !airQualityData ? (
           <div className="min-h-[500px] flex flex-col items-center justify-center gap-3">
             <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
@@ -196,7 +207,7 @@ export default function HomePage() {
           </div>
         ) : airQualityData && weatherData ? (
           <>
-            {/* 1. Main Hero Dashboard & AQI Scale */}
+            {/* 1. Current Air Quality & Speedometer + AQI Severity Scale */}
             <HeroDashboard
               location={location}
               aqi={currentAqi}
@@ -207,17 +218,9 @@ export default function HomePage() {
               isRefreshing={isRefreshing}
               onRefresh={() => loadData(location, true)}
               onOpenCompare={() => setIsCompareOpen(true)}
-              onOpenReport={() => setIsReportOpen(true)}
             />
 
-            {/* 2. Best Modeled Window Card */}
-            <BestWindowCard
-              data={airQualityData}
-              standard={standard}
-              lang={lang}
-            />
-
-            {/* 3. AI Air Insight Card */}
+            {/* 2. AI Air Insight */}
             <AIInsightCard
               location={location}
               aqiData={airQualityData}
@@ -227,47 +230,54 @@ export default function HomePage() {
               lang={lang}
             />
 
-            {/* 4. Air Quality Story (Diurnal Cycle) */}
+            {/* 3. Pollutants in Air */}
+            <PollutantsGrid
+              data={airQualityData}
+              lang={lang}
+            />
+
+            {/* 4. Weather & Meteorology */}
+            <WeatherSection
+              weather={weatherData}
+              lang={lang}
+            />
+
+            {/* 5. Air Quality Story (Diurnal Study) */}
             <AQIStoryCard
               data={airQualityData}
               standard={standard}
               lang={lang}
             />
 
-            {/* 5. Pollutants in the Air & Expandable Guide */}
-            <PollutantsGrid
+            {/* 6. Best Modeled Window (Best Time to Go Outdoor) */}
+            <BestWindowCard
               data={airQualityData}
+              standard={standard}
               lang={lang}
             />
 
-            {/* 6. Weather & Meteorology Section */}
-            <WeatherSection
-              weather={weatherData}
-              lang={lang}
-            />
-
-            {/* 7. AQI Timeline (Historical Recharts) */}
+            {/* 7. AQI Timeline */}
             <AQITimeline
               data={airQualityData}
               standard={standard}
               lang={lang}
             />
 
-            {/* 8. AQI Forecast (Next 72 Hours) */}
+            {/* 8. AQI Forecast */}
             <AQIForecast
               data={airQualityData}
               standard={standard}
               lang={lang}
             />
 
-            {/* 9. Preventive Measures & Health Guidance */}
+            {/* 9. Preventive Measures & Health Guidelines */}
             <PreventiveMeasures
               category={currentCategory}
               standard={standard}
               lang={lang}
             />
 
-            {/* 10. AQI Education & FAQs */}
+            {/* 10. AQI and Air Quality Guidance (Education Section) */}
             <EducationSection
               lang={lang}
             />
@@ -287,20 +297,6 @@ export default function HomePage() {
           standard={standard}
           lang={lang}
           onClose={() => setIsCompareOpen(false)}
-        />
-      )}
-
-      {/* Printable Report Modal */}
-      {isReportOpen && airQualityData && weatherData && (
-        <ReportModal
-          location={location}
-          aqi={currentAqi}
-          category={currentCategory}
-          standard={standard}
-          aqiData={airQualityData}
-          weatherData={weatherData}
-          lang={lang}
-          onClose={() => setIsReportOpen(false)}
         />
       )}
     </div>

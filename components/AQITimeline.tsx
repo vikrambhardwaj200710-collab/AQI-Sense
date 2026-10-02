@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { AirQualityResponse, AQIStandard, Language } from "@/lib/types";
-import { getAQICategory } from "@/lib/aqi-standards";
+import { calculateIndianNAQI, getAQICategory } from "@/lib/aqi-standards";
 import { getTranslation } from "@/lib/i18n";
 import {
   ResponsiveContainer,
@@ -13,7 +13,6 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import { Calendar, Filter, Layers } from "lucide-react";
 
 interface AQITimelineProps {
   data: AirQualityResponse;
@@ -33,7 +32,6 @@ export function AQITimeline({ data, standard, lang }: AQITimelineProps) {
   }, []);
 
   const isHi = lang === "hi";
-  const aqiKey = standard === "us" ? "us_aqi" : "european_aqi";
 
   // Filter and format hourly data based on selected filter
   const chartData = useMemo(() => {
@@ -52,11 +50,29 @@ export function AQITimeline({ data, standard, lang }: AQITimelineProps) {
     const endIndex = currentIndex;
 
     const slicedTimes = hourly.time.slice(startIndex, endIndex + 1);
-    const slicedAqi = ((hourly as any)[aqiKey] as number[])?.slice(startIndex, endIndex + 1) || [];
     const slicedPm25 = hourly.pm2_5?.slice(startIndex, endIndex + 1) || [];
     const slicedPm10 = hourly.pm10?.slice(startIndex, endIndex + 1) || [];
     const slicedO3 = hourly.ozone?.slice(startIndex, endIndex + 1) || [];
     const slicedNo2 = hourly.nitrogen_dioxide?.slice(startIndex, endIndex + 1) || [];
+    const slicedSo2 = hourly.sulphur_dioxide?.slice(startIndex, endIndex + 1) || [];
+    const slicedCo = hourly.carbon_monoxide?.slice(startIndex, endIndex + 1) || [];
+
+    let slicedAqi: number[] = [];
+    if (standard === "india") {
+      slicedAqi = slicedTimes.map((_, idx) =>
+        calculateIndianNAQI({
+          pm2_5: slicedPm25[idx],
+          pm10: slicedPm10[idx],
+          no2: slicedNo2[idx],
+          so2: slicedSo2[idx],
+          co: slicedCo[idx],
+          o3: slicedO3[idx],
+        })
+      );
+    } else {
+      const aqiKey = standard === "us" ? "us_aqi" : "european_aqi";
+      slicedAqi = (((hourly as any)[aqiKey] as number[]) || []).slice(startIndex, endIndex + 1);
+    }
 
     return slicedTimes.map((timeStr, idx) => {
       const d = new Date(timeStr);
@@ -86,12 +102,12 @@ export function AQITimeline({ data, standard, lang }: AQITimelineProps) {
         color: cat.color,
       };
     });
-  }, [data, standard, filter, lang, aqiKey, isHi]);
+  }, [data, standard, filter, lang, isHi]);
 
   // Color & labels according to selected metric
   const metricConfig = {
     aqi: {
-      name: standard === "us" ? "US AQI" : "European EAQI",
+      name: standard === "india" ? "India NAQI" : standard === "us" ? "US AQI" : "European EAQI",
       stroke: "#10b981",
       fill: "url(#aqiGradient)",
       unit: "AQI",
